@@ -11,7 +11,7 @@
 			<section id="header" class="dark">
 				<header>
 					<h1>Impaired Driver Detection</h1>
-					<p>Sudheesh, Aarav, Ainesh</p>
+					<p>Sudheesh Dabbara, Aarav Mohan, Ainesh Mohan</p>
 				</header>
 			</section>
 
@@ -20,7 +20,7 @@
 					<div class="container">
 						<h2>Motivation</h2>
 						<p>Impaired drivers (inattentive, drowsy, under the influence) contribute to around 50% of accidents on the road in the U.S. 
-							These accidents contribute to around 15,000 deaths per year in the US (275,000 worldwide), making this an important issue that we hope to address. 
+							These accidents contribute to around 15,000 deaths per year in the U.S. and 275,000 worldwide, making this an important issue that we hope to address. 
 							Thus for our project, we want to detect such drivers using computer vision via dashcam in the car, 
 							and issue a warning to the driver, or even lock the vehicle, to prevent these accidents before they happen.</p>
 					</div>
@@ -33,7 +33,7 @@
 								<p>Drowsy Driver</p>
 							</header>
 							<p>There is currently no all encompasing ready to use in any vehicle solution for detecting impaired drivers.
-								One solution is <a href="https://www.tesla.com/ownersmanual/model3/en_us/GUID-EDAD116F-3C73-40FA-A861-68112FF7961F.html">Tesla's interior camera</a> for monitoring the driver when FSD is turned on. However, from what Tesla has released, this only attempts to detect that the driver is looking towards the road, and does not attempt to detect other types of impairement like drowsiness. Additionally, this is only available in Teslas.
+								One solution is <a href="https://www.tesla.com/ownersmanual/model3/en_us/GUID-EDAD116F-3C73-40FA-A861-68112FF7961F.html">Tesla's interior camera</a> for monitoring the driver when FSD is turned on. However, from what Tesla has released, this only attempts to detect that the driver is looking towards the road, and does not attempt to detect other types of impairement like drowsiness. Additionally, this is only available in Teslas with FSD purchased.
 								<a href="https://www.samsara.com/blog/drowsiness-detection-samsara-sets-standard">Samsara</a> released a comprehensive approach for detecting drowsy drivers in 2024, targeted towards truck drivers. However, their solution only detects drowsy drivers by looking for queues like yawns and head nods, but does try to detect other types of impairement. Thus, this solution is limited and less applicable for everyday use.
 								Another approach is to monitor steering, however detecting poor steering might not happen quick enough to prevent an accident, and poor steering is not representative of impairment as a driver may have bad reaction time (due to impairment) but maintain acceptable steering patterns. 
 							</p>
@@ -46,14 +46,14 @@
 				<header>
 					<div class="container">
 						<h2>Approach and Implementation</h2>
-						<p>Impaired Driver</p>
+						<p>CNNs and Post Classifier</p>
 						<p>To accomplish our goal, we implemented a pipeline consisting of two Convolutional Neural Networks (CNN) that we developed the architecture for and trained with data we found (linked at the bottom) using keras with TensorFlow in python, followed by a post classifier. 
 							Our first CNN is a regression model that detects the driver in the image. Our second CNN is a binary classification model that uses the detected driver as input, and determines if the driver is attentive to the road or not (head is facing forward means attentive).
 							 If this model determines the driver to be attentive, the cropped image of the driver is sent through the post classifier. This determines if the driver is drowsy or under the influence by looking for yawns, closed eyes, or head nodding by counting pixels in expected locations of the mouth and eyes.
-							  The reason we split this into two models and a post classifier was we struggled to find datasets; most datasets for classifying the state of a face were focused on the face,
-							   meaning our model would struggle when given an image from a dashcam. We also attempted to join multiple smaller datasets of images from a dashcam focused on inattentive drivers or drowsy drives together.
+							  The reason we split this into two models and a post classifier was we struggled to find viable datasets and with developing an accurate yet small model given we trained everything on our laptops. Most datasets we found for classifying the state of a face (yawning, asleep, inattentive, etc.) were focused on the face,
+							   meaning our model would struggle when given an image from a dashcam. We also attempted to join multiple smaller datasets of dashcam images focused on inattentive drivers or drowsy drives together.
 							    However, this resulted in heavy class imbalance and inconsistency in the location from which the image of the driver was taken. 
-								Thus, we decided to split the bigger problem into smaller ones and solve those with the respective smaller datasets that we found.
+								Thus, we decided to split the bigger problem into smaller ones and solve those with the respective smaller datasets that we found. Since we could not find a great dataset to train a model to detect if the driver was drowsy or under the influence, we developed the post classifier.
 						</p>
 						<p>
 							This is a diagram of what our pipeline looks like:
@@ -70,16 +70,17 @@
 								<section>
 									<h3>Issues we faced along the way</h3>
 									<h5>Until the midterm report</h5>
-									<p>Our initial plan was to rely on OpenCV’s HAAR cascade classifier for face detection to find the driver and then develop + train our own model for classifying state of the driver, HAAR cascade proved unreliable for images captured from a dashboard perspective. 
-									Although effective with standard, front-facing portraits, the classifier struggled with varied angles, lighting, and partial occlusions typical of in-car dashcam footage. 
-									To address this limitation, we pivoted to training our custom TensorFlow keras CNN for driver localization using a small labeled Roboflow dataset.
-									This pivot introduced new challenges of model complexity and computational limits. As mentioned in the section above, due to dataset limitations, we decided here to make two models, one for driver detection and one for classifying state of the driver. 
+									<p>Our initial plan was to rely on OpenCV’s HAAR cascade classifier for face detection to find the driver and then develop + train our own model for classifying state of the driver. However, HAAR cascade proved unreliable for images captured from a dashboard perspective. 
+									Although effective with standard, front facing portraits, the classifier struggled with varied angles, lighting, and partial occlusions typical of in-car dashcam footage. 
+									To address this limitation, we pivoted to training our custom TensorFlow keras CNN for driver localization.
+									However, we initially attempted to pivot to making one model for both driver detection and state classification, which introduced difficult challenges of poor accuracy and computational limits due to dataset limitations as mentioned in the section above. 
+									Thus we decided here to make two models, one for driver detection and one for classifying state of the driver. 
 									</p>
 									<h4>Until Final Presentation</h4>
 									<p>Our initial plan for our driver state classification model was to classify if the driver was attentive, inattentive, drowsy, or under the influence in one model.
 										 However, we ran into issues with developing and training a model with more than two classes largely due to the dataset limitations and imbalance when combining multiple datasets. 
 										Also, increasing model complexity for improved accuracy was not viable due to compute power limitations, as we trained everything on our personal machines.
-										 So we decided here to pivot towards training a model to classify the driver as attentive and facing the road, or inattentive, and develop a post classifier for determining if the driver was drowsy or under the influence.
+										 So we decided here to pivot towards training a model to classify the driver as attentive and facing the road, or inattentive, and then developed a post classifier for determining if the driver was drowsy or under the influence.
 									</p>
 								</section>
 							</div>
@@ -135,14 +136,16 @@
 								<li>Soultana, Abdelfettah, et al. “A Systematic Literature Review of Driver Inattention Monitoring Systems for Smart Car.” International Journal of Interactive Mobile Technologies (iJIM), Laboratory of Modeling and Information Technology Faculty of Sciences Ben M’SIK University Hassan II, 31 Aug. 2022. <a href="https://online-journals.org/index.php/i-jim/article/view/33075">Link to report</a> 
 								</li>
 								<h2>Data</h2>
-								<li>Data for face detection - <a href="https://universe.roboflow.com/computer-vision-project-ehipo/driver-face-detection-dzicg">Link</a>
+								<li>Dataset for driver detection + state classification - <a href="https://universe.roboflow.com/computer-vision-project-ehipo/driver-face-detection-dzicg">Link</a>
 								</li>
-								<li>Dataset for classification - <a href="https://universe.roboflow.com/si-bridges/distracted-driving-wuu1n">Link</a>
+								<li>Dataset for state classification - <a href="https://universe.roboflow.com/si-bridges/distracted-driving-wuu1n">Link</a>
 								<br>
 								<h2>Reports</h2>
 								<li>Project Proposal - <a href="https://docs.google.com/document/d/1Xvg1fYXNDsIdT9YKROK0_mmb4pUJMxz5IQQYLmTTHUE/edit?usp=sharing">Link</a>
 								</li>
 								<li>Midterm Report - <a href="https://docs.google.com/document/d/1IbhU7jkqAB2i8MAc_e2UsXxVjukievzIBwDKjNNcbdU/edit?usp=sharing">Link</a>
+								</li>
+								<li>Presentation - <a href="https://drive.google.com/file/d/1lUICr1Bj2hBgPLI_BQdtXMQVX1dKSAup/view?usp=sharing">Link</a>
 								</li>
 							</ul>
 					</div>
